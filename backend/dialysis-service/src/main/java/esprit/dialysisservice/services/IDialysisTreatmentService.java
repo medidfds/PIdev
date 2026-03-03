@@ -1,17 +1,18 @@
 package esprit.dialysisservice.services;
 
-import esprit.dialysisservice.dtos.request.DialysisTreatmentRequestDTO;
+import esprit.dialysisservice.dtos.SuspendedTreatmentAuditDTO;
+import esprit.dialysisservice.dtos.request.CreateDialysisTreatmentRequest;
+import esprit.dialysisservice.dtos.request.UpdateDialysisTreatmentRequest;
 import esprit.dialysisservice.dtos.response.DialysisTreatmentResponseDTO;
-import esprit.dialysisservice.entities.DialysisTreatment;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface IDialysisTreatmentService {
 
-    DialysisTreatmentResponseDTO addTreatment(DialysisTreatmentRequestDTO dto);
+    DialysisTreatmentResponseDTO addTreatment(CreateDialysisTreatmentRequest dto);
 
-    DialysisTreatmentResponseDTO updateTreatment(UUID id, DialysisTreatmentRequestDTO dto);
+    DialysisTreatmentResponseDTO updateTreatment(UUID id, UpdateDialysisTreatmentRequest dto);
 
     List<DialysisTreatmentResponseDTO> getAllTreatments();
 
@@ -22,4 +23,6 @@ public interface IDialysisTreatmentService {
     void deleteTreatment(UUID id);
     DialysisTreatmentResponseDTO suspendTreatment(UUID id, String reason);
     DialysisTreatmentResponseDTO archiveTreatment(UUID id);
+    List<DialysisTreatmentResponseDTO> getMyTreatments();
+    List<SuspendedTreatmentAuditDTO> getSuspendedAudit();
 }

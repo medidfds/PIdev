@@ -16,6 +16,8 @@ public class DialysisTreatmentResponseDTO {
     private UUID id;
     private UUID patientId;
     private UUID doctorId;
+    private String patientName;
+    private String doctorName;
     private DialysisType dialysisType;
     private VascularAccessType vascularAccessType;
     private Integer frequencyPerWeek;

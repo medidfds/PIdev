@@ -1,5 +1,5 @@
-
-import { Component } from '@angular/core';
+// line-chart-one.component.ts
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -15,120 +15,81 @@ import {
   NgApexchartsModule
 } from 'ng-apexcharts';
 
+export type LineSeriesInput = {
+  name: string;
+  data: Array<number | null | undefined>;
+};
 
 @Component({
   selector: 'app-line-chart-one',
-  imports: [
-    NgApexchartsModule
-],
+  standalone: true,
+  imports: [NgApexchartsModule],
   templateUrl: './line-chart-one.component.html',
-  styles: ``
 })
-export class LineChartOneComponent {
+export class LineChartOneComponent implements OnChanges {
+  @Input() categories: string[] = [];         // e.g. dates formatted "Feb 23"
+  @Input() seriesInput: LineSeriesInput[] = []; // e.g. [{name:'spKt/V', data:[...]}, {name:'URR %', data:[...]}]
+  @Input() height = 320;
 
-  public series: ApexAxisChartSeries = [
-    {
-      name: 'Sales',
-      data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235],
-    },
-    {
-      name: 'Revenue',
-      data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140],
-    },
-  ];
+  public series: ApexAxisChartSeries = [];
 
   public chart: ApexChart = {
     fontFamily: 'Outfit, sans-serif',
-    height: 310,
+    height: this.height,
     type: 'area',
-    toolbar: {
-      show: false
-    }
+    toolbar: { show: false },
   };
 
-  public colors: string[] = ['#465FFF', '#9CB9FF'];
+  public colors: string[] = ['#465FFF', '#9CB9FF', '#22c55e', '#f59e0b'];
 
-  public stroke: ApexStroke = {
-    curve: 'straight',
-    width: [2, 2]
-  };
+  public stroke: ApexStroke = { curve: 'straight', width: 2 };
 
   public fill: ApexFill = {
     type: 'gradient',
-    gradient: {
-      opacityFrom: 0.55,
-      opacityTo: 0
-    }
+    gradient: { opacityFrom: 0.55, opacityTo: 0 },
   };
 
   public markers: ApexMarkers = {
     size: 0,
     strokeColors: '#fff',
     strokeWidth: 2,
-    hover: {
-      size: 6
-    }
+    hover: { size: 6 },
   };
 
   public grid: ApexGrid = {
-    xaxis: {
-      lines: {
-        show: false
-      }
-    },
-    yaxis: {
-      lines: {
-        show: true
-      }
-    }
+    xaxis: { lines: { show: false } },
+    yaxis: { lines: { show: true } },
   };
 
-  public dataLabels: ApexDataLabels = {
-    enabled: false
-  };
+  public dataLabels: ApexDataLabels = { enabled: false };
 
-  public tooltip: ApexTooltip = {
-    enabled: true,
-    x: {
-      format: 'dd MMM yyyy'
-    }
-  };
+  public tooltip: ApexTooltip = { enabled: true };
 
   public xaxis: ApexXAxis = {
     type: 'category',
-    categories: [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ],
-    axisBorder: {
-      show: false
-    },
-    axisTicks: {
-      show: false
-    },
-    tooltip: {
-      enabled: false
-    }
+    categories: [],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    tooltip: { enabled: false },
   };
 
   public yaxis: ApexYAxis = {
-    labels: {
-      style: {
-        fontSize: '12px',
-        colors: ['#6B7280']
-      }
-    },
-    title: {
-      text: '',
-      style: {
-        fontSize: '0px'
-      }
-    }
+    title: { text: '' },
   };
 
   public legend: ApexLegend = {
-    show: false,
+    show: true,
     position: 'top',
-    horizontalAlign: 'left'
+    horizontalAlign: 'left',
   };
+
+  ngOnChanges(_: SimpleChanges): void {
+    this.chart = { ...this.chart, height: this.height };
+    this.xaxis = { ...this.xaxis, categories: this.categories ?? [] };
+
+    this.series = (this.seriesInput ?? []).map(s => ({
+      name: s.name,
+      data: (s.data ?? []).map(v => (typeof v === 'number' ? v : null)),
+    }));
+  }
 }

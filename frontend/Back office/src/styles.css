@@ -865,3 +865,20 @@ pre[class*="language-"] {
 pre[class*="language-"].line-numbers {
   padding-left: 2.8em !important;
 }
+/* Global modal centering for <dialog> */
+dialog.app-modal[open]{
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+dialog.app-modal::backdrop{
+  background: rgba(0,0,0,.60);
+  backdrop-filter: blur(2px);
+}

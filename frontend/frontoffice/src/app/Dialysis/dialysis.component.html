@@ -1,0 +1,125 @@
+<div class="container-fluid py-5">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="text-center mx-auto mb-5" style="max-width: 500px;">
+      <h5 class="d-inline-block text-primary text-uppercase border-bottom border-5">
+        Patient Dashboard
+      </h5>
+      <h1 class="display-4">My Dialysis Status</h1>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div *ngIf="!loading">
+      <!-- Error State -->
+      <div *ngIf="!loading && error" class="alert alert-danger text-center">
+        {{ error }}
+      </div>
+
+
+      <!-- Row 1: Treatment Info -->
+      <div class="row g-5 mb-5">
+        <div class="col-lg-6">
+          <div class="bg-light rounded p-5">
+            <h3 class="mb-4 text-primary">
+              <i class="fa fa-heartbeat me-2"></i>Current Treatment
+            </h3>
+
+            <div *ngIf="treatment">
+              <p><strong>Status:</strong>
+                <span class="badge" [ngClass]="{'bg-success': treatment.status==='ACTIVE', 'bg-warning': treatment.status==='SUSPENDED'}">
+                  {{ treatment.status }}
+                </span>
+              </p>
+              <p><strong>Frequency:</strong> {{ treatment.frequencyPerWeek }} times / week</p>
+              <p><strong>Target Weight:</strong> {{ treatment.targetDryWeight }} kg</p>
+            </div>
+
+            <div *ngIf="!treatment" class="alert alert-info">
+              No active treatment found.
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Stats Placeholder -->
+        <div class="col-lg-6">
+          <div class="bg-light rounded p-5 h-100">
+            <h3 class="mb-4 text-primary">
+              <i class="fa fa-chart-line me-2"></i>Last Session Stats
+            </h3>
+
+            <div *ngIf="sessions.length > 0">
+              <h2 class="display-4">
+                {{ sessions[0].achievedKtV | number:'1.1-1' }}
+              </h2>
+              <p class="text-muted">Kt/V (Adequacy)</p>
+              <p *ngIf="sessions[0].achievedKtV < 1.2" class="text-danger fw-bold">
+                <i class="fa fa-exclamation-triangle"></i> Below Target (1.2)
+              </p>
+              <p *ngIf="sessions[0].achievedKtV >= 1.2" class="text-success fw-bold">
+                <i class="fa fa-check-circle"></i> Adequate
+              </p>
+            </div>
+            <div *ngIf="sessions.length === 0" class="text-muted">
+              No sessions recorded yet.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: History Table -->
+      <div class="row">
+        <div class="col-12">
+          <div class="bg-light rounded p-4">
+            <h3 class="text-primary mb-4">Session History</h3>
+
+            <div class="table-responsive">
+              <table class="table table-hover table-striped mb-0">
+                <thead class="table-primary">
+                <tr>
+                  <th>Date</th>
+                  <th>Weight Before</th>
+                  <th>Weight After</th>
+                  <th>UF Volume</th>
+                  <th>Kt/V</th>
+                  <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let s of sessions">
+                  <td>{{ s.sessionDate | date:'yyyy-MM-dd' }}</td>
+                  <td>{{ s.weightBefore }} kg</td>
+                  <td>{{ s.weightAfter }} kg</td>
+                  <td>{{ s.ultrafiltrationVolume }} L</td>
+                  <td>
+                      <span [ngClass]="{'text-danger': s.achievedKtV < 1.2, 'text-success': s.achievedKtV >= 1.2}">
+                        {{ s.achievedKtV | number:'1.1-2' }}
+                      </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-success" *ngIf="s.weightAfter">Completed</span>
+                    <span class="badge bg-warning" *ngIf="!s.weightAfter">In Progress</span>
+                  </td>
+                </tr>
+
+                <tr *ngIf="sessions.length === 0">
+                  <td colspan="6" class="text-center text-muted">No history found.</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

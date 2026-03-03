@@ -17,18 +17,23 @@ import { ImagesComponent } from './pages/ui-elements/images/images.component';
 import { VideosComponent } from './pages/ui-elements/videos/videos.component';
 import { CalenderComponent } from './pages/calender/calender.component';
 
+
 // --- 1. Your Dialysis Imports ---
 import { TreatmentListComponent } from './pages/dialysis/treatment-list/treatment-list.component';
 import { SessionListComponent } from './pages/dialysis/session-list/session-list.component';
 
 // --- 2. Friend's Guard Import ---
 import { RoleGuard } from './guards/role.guard';
+import {AdminAuditComponent} from "./pages/dialysis/admin/audit/admin-audit.component";
+import {SystemConfigComponent} from "./pages/dialysis/admin/system-config/system-config.component";
+import {MyScheduleComponent} from "./pages/dialysis/my-schedule/my-schedule.component";
 
 export const routes: Routes = [
     {
         path: '',
         component: AppLayoutComponent,
-        canActivate: [RoleGuard], // Keep friend's security
+        canActivate: [RoleGuard],
+        data: { roles: ['admin','doctor', 'nurse', 'patient'] },
         children: [
             {
                 path: '',
@@ -37,17 +42,41 @@ export const routes: Routes = [
                 title: 'Dashboard | Back Office',
             },
 
-            // --- 3. Your Dialysis Routes ---
+
+            // --- Dialysis Routes ---
             {
                 path: 'dialysis/treatments',
                 component: TreatmentListComponent,
-                title: 'Dialysis Treatments'
+                canActivate: [RoleGuard],
+                data: { roles: ['doctor', 'nurse', 'admin'] }
             },
             {
                 path: 'dialysis/sessions/:id',
                 component: SessionListComponent,
-                title: 'Dialysis Sessions'
+                canActivate: [RoleGuard],
+                data: { roles: ['doctor', 'nurse', 'admin'] }
             },
+
+        // --- Dialysis Admin Routes ---
+            {
+                path: 'dialysis/admin/settings',
+                component: SystemConfigComponent,
+                canActivate: [RoleGuard],
+                data: { roles: ['admin'] }
+            },
+            {
+                path: 'dialysis/admin/audit',
+                component: AdminAuditComponent,
+                canActivate: [RoleGuard],
+                data: { roles: ['admin'] }
+            },
+            {
+                path: 'dialysis/my-schedule',
+                component: MyScheduleComponent,
+                canActivate: [RoleGuard],
+                data: { roles: ['nurse'] }
+            },
+
 
             // --- 4. Shared/Existing Routes ---
             {
@@ -121,6 +150,10 @@ export const routes: Routes = [
                 title:'Angular Videos Dashboard | TailAdmin - Angular Admin Dashboard Template'
             },
         ]
+    },
+    {
+        path: 'unauthorized',
+        component: NotFoundComponent, // or create a real UnauthorizedComponent later
     },
     // Public/Error Pages
     {

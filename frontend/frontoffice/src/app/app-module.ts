@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
 import keycloakConfig from './keycloak.config';
@@ -39,6 +40,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
   ],
   imports: [
     CommonModule,
+    RouterModule,
     BrowserModule,
     AppRoutingModule,
     FormsModule,

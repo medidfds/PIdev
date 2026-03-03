@@ -1,4 +1,5 @@
 package esprit.dialysisservice.entities;
+import esprit.dialysisservice.entities.enums.DialysisShift;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,20 +28,26 @@ public class DialysisSession {
     // External Keys
     private UUID nurseId; // Who performed it
 
-    private LocalDateTime sessionDate;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DialysisShift shift;
 
+    @Column(nullable = false)
+    private LocalDateTime sessionDate; // slot start datetime (e.g. 2026-02-18T08:00)
     // Machine Data (Physical Inputs)
     private Double weightBefore;
     private Double weightAfter;
     private Double ultrafiltrationVolume; // Liters removed
 
     // Safety Data
-    private String preBloodPressure; // "120/80"
-    private String complications;    // Text description
+    private String preBloodPressure;
+    private String complications;
 
-    // Math Data (To be calculated in Level 2)
-    // We store them as null initially
-    private Double preDialysisUrea;  // From Lab
-    private Double postDialysisUrea; // From Lab
-    private Double achievedKtV;      // The Result
+    // Math Data
+    private Double preDialysisUrea;
+    private Double postDialysisUrea;
+    private Double achievedKtV;
+    private Double urr;     // percentage 0..100
+    private Double spKtV;   // Daugirdas spKt/V
+    private Double eKtV;    // equilibrated Kt/V (estimate)
 }

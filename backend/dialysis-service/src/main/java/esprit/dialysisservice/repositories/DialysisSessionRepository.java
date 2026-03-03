@@ -1,19 +1,43 @@
 package esprit.dialysisservice.repositories;
 
 import esprit.dialysisservice.entities.DialysisSession;
+import esprit.dialysisservice.entities.enums.DialysisShift;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public interface DialysisSessionRepository extends JpaRepository<DialysisSession, UUID> {
-    // Get history for a specific treatment plan
-    List<DialysisSession> findByTreatmentId(UUID treatmentId);
-    // Custom query to find sessions by the patient_id inside the parent treatment table
-    @Query("SELECT s FROM DialysisSession s WHERE s.treatment.patientId = :patientId")
-    List<DialysisSession> findByTreatmentPatientId(@Param("patientId") UUID patientId);
+
+    boolean existsByTreatment_IdAndWeightAfterIsNull(UUID treatmentId);
+
+    boolean existsByNurseIdAndWeightAfterIsNull(UUID nurseId);
+
+    long countByShiftAndSessionDateBetweenAndWeightAfterIsNull(DialysisShift shift, LocalDateTime start, LocalDateTime end);
+
+    List<DialysisSession> findByTreatment_IdOrderBySessionDateDesc(UUID treatmentId);
+
+    List<DialysisSession> findByTreatmentPatientId(UUID patientId);
+
+    void deleteByTreatment_Id(UUID treatmentId);
+
+    @Query("""
+        select s from DialysisSession s
+        join fetch s.treatment t
+        where s.sessionDate between :start and :end
+    """)
+    List<DialysisSession> findAllWithTreatmentBetween(@Param("start") LocalDateTime start,
+                                                      @Param("end") LocalDateTime end);
+
+    // ===== Feature 2 analytics (NEW)
+    List<DialysisSession> findByTreatment_IdOrderBySessionDateAsc(UUID treatmentId);
+
+    List<DialysisSession> findByTreatment_PatientIdAndSessionDateBetweenOrderBySessionDateAsc(
+            UUID patientId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
 }
