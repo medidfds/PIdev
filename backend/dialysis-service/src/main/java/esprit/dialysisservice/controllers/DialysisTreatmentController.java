@@ -1,10 +1,19 @@
 package esprit.dialysisservice.controllers;
 
-
-import esprit.dialysisservice.entities.DialysisTreatment;
+import esprit.dialysisservice.dtos.SuspendedTreatmentAuditDTO;
+import esprit.dialysisservice.dtos.request.CreateDialysisTreatmentRequest;
+import esprit.dialysisservice.dtos.request.UpdateDialysisTreatmentRequest;
+import esprit.dialysisservice.dtos.response.DialysisTreatmentResponseDTO;
 import esprit.dialysisservice.services.IDialysisTreatmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -15,42 +24,104 @@ import java.util.UUID;
 public class DialysisTreatmentController {
 
     private final IDialysisTreatmentService treatmentService;
+    private UUID extractPatientId(Authentication authentication) {
+        JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) authentication;
+        return UUID.fromString(jwtAuth.getToken().getSubject());
+    }
 
-    // 1. Create (Already there)
+    // ========================
+    // DOCTOR: CREATE
+    // ========================
     @PostMapping
-    public DialysisTreatment createTreatment(@RequestBody DialysisTreatment treatment) {
-        return treatmentService.addTreatment(treatment);
+    @PreAuthorize("hasRole('doctor')")
+    public ResponseEntity<DialysisTreatmentResponseDTO> create(@Valid @RequestBody CreateDialysisTreatmentRequest dto) {
+        return ResponseEntity.ok(treatmentService.addTreatment(dto));
     }
 
-    // 2. Get All Treatments (MISSING - Added now)
-    @GetMapping
-    public List<DialysisTreatment> getAllTreatments() {
-        return treatmentService.getAllTreatments();
-    }
-
-    // 3. Get Single Treatment
-    @GetMapping("/{id}")
-    public DialysisTreatment getById(@PathVariable UUID id) {
-        return treatmentService.getTreatmentById(id);
-    }
-
-    // 4. Get by Patient
-    @GetMapping("/patient/{patientId}")
-    public List<DialysisTreatment> getByPatient(@PathVariable UUID patientId) {
-        return treatmentService.getTreatmentsByPatient(patientId);
-    }
-
-    // 5. Update Treatment (MISSING - Added now)
+    // ========================
+    // DOCTOR: UPDATE
+    // ========================
     @PutMapping("/{id}")
-    public DialysisTreatment updateTreatment(@PathVariable UUID id, @RequestBody DialysisTreatment treatmentDetails) {
-        // Ensure the ID in the body matches the URL or set it here
-        treatmentDetails.setId(id);
-        return treatmentService.updateTreatment(treatmentDetails);
+    @PreAuthorize("hasRole('doctor')")
+    public ResponseEntity<DialysisTreatmentResponseDTO> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateDialysisTreatmentRequest dto
+    ) {
+        return ResponseEntity.ok(treatmentService.updateTreatment(id, dto));
     }
 
-    // 6. Delete Treatment (MISSING - Added now)
+    // ========================
+    // READ: admin + nurse
+    // ========================
+    @GetMapping
+    @PreAuthorize("hasAnyRole('admin','nurse')")
+    public ResponseEntity<List<DialysisTreatmentResponseDTO>> getAllTreatments() {
+        return ResponseEntity.ok(treatmentService.getAllTreatments());
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('admin','doctor','nurse')")
+    public ResponseEntity<DialysisTreatmentResponseDTO> getTreatmentById(@PathVariable UUID id) {
+        return ResponseEntity.ok(treatmentService.getTreatmentById(id));
+    }
+
+    // Staff usage (admin/doctor/nurse)
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('admin','doctor','nurse')")
+    public ResponseEntity<List<DialysisTreatmentResponseDTO>> getTreatmentsByPatient(@PathVariable UUID patientId) {
+        return ResponseEntity.ok(treatmentService.getTreatmentsByPatient(patientId));
+    }
+
+    // ========================
+    // DOCTOR: LIFECYCLE
+    // ========================
+    @PatchMapping("/{id}/suspend")
+    @PreAuthorize("hasRole('doctor')")
+    public ResponseEntity<DialysisTreatmentResponseDTO> suspendTreatment(
+            @PathVariable UUID id,
+            @RequestParam String reason
+    ) {
+        return ResponseEntity.ok(treatmentService.suspendTreatment(id, reason));
+    }
+
+    @PatchMapping("/{id}/archive")
+    @PreAuthorize("hasRole('doctor')")
+    public ResponseEntity<DialysisTreatmentResponseDTO> archiveTreatment(@PathVariable UUID id) {
+        return ResponseEntity.ok(treatmentService.archiveTreatment(id));
+    }
+
+    // ========================
+    // DOCTOR: "MY" treatments (kept)
+    // ========================
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('doctor')")
+    public ResponseEntity<List<DialysisTreatmentResponseDTO>> myTreatments() {
+        return ResponseEntity.ok(treatmentService.getMyTreatments());
+    }
+
+    // ========================
+    // PATIENT: "MY" active treatment (Frontoffice)
+    // ========================
+    @GetMapping("/patient/my")
+    public ResponseEntity<List<DialysisTreatmentResponseDTO>> myActiveTreatmentAsPatient(Authentication authentication) {
+        UUID patientId = extractPatientId(authentication);
+        return ResponseEntity.ok(treatmentService.getTreatmentsByPatient(patientId));
+    }
+
+
+    // ========================
+    // ADMIN: delete
+    // ========================
     @DeleteMapping("/{id}")
-    public void deleteTreatment(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<Void> deleteTreatment(@PathVariable UUID id) {
         treatmentService.deleteTreatment(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/audit/suspended")
+    @PreAuthorize("hasAnyRole('admin','ADMIN')")
+    public ResponseEntity<List<SuspendedTreatmentAuditDTO>> suspendedAudit() {
+        return ResponseEntity.ok(treatmentService.getSuspendedAudit());
     }
 }

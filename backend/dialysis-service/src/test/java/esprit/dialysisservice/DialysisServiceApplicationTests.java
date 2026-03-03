@@ -1,12 +1,12 @@
 package esprit.dialysisservice;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootApplication
-public class DialysisServiceApplicationTests {
+@SpringBootTest
+class DialysisServiceApplicationTests {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DialysisServiceApplication.class, args);
+    @Test
+    void contextLoads() {
     }
 }
