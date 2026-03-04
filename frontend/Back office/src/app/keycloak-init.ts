@@ -8,6 +8,8 @@ export function initializeKeycloak(keycloak: KeycloakService) {
             initOptions: {
                 onLoad: 'login-required',
                 checkLoginIframe: false,
+                pkceMethod: 'S256',
             },
+            enableBearerInterceptor: false, // because you use your own interceptor
         });
 }

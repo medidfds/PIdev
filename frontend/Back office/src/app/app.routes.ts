@@ -17,6 +17,8 @@ import { ImagesComponent } from './pages/ui-elements/images/images.component';
 import { VideosComponent } from './pages/ui-elements/videos/videos.component';
 import { CalenderComponent } from './pages/calender/calender.component';
 import { ClinicalComponent } from './pages/clinical/clinical.component';
+import { TreatmentListComponent } from './pages/dialysis/treatment-list/treatment-list.component';
+import { SessionListComponent } from './pages/dialysis/session-list/session-list.component';
 import { ConsultationsCalendarComponent } from './pages/consultations-calendar/consultations-calendar.component';
 
 
@@ -25,6 +27,9 @@ import {HospitalizationComponent} from "./pages/dashboard/hospitalization/hospit
 import { StatistiqueHospitalizationComponent } from './pages/statistique/statistique-hospitalization.component';
 import { PharmacyComponent } from './pages/pharmacy/pharmacy.component';
 import { DiagnosticComponent } from './pages/dashboard/diagnostic/diagnostic.component';
+import {SystemConfigComponent} from "./pages/dialysis/admin/system-config/system-config.component";
+import {AdminAuditComponent} from "./pages/dialysis/admin/audit/admin-audit.component";
+import {MyScheduleComponent} from "./pages/dialysis/my-schedule/my-schedule.component";
 export const routes: Routes = [
   {
     path: '',
@@ -59,10 +64,44 @@ export const routes: Routes = [
       { path: 'clinical', component: ClinicalComponent },
       { path: 'pharmacy', component: PharmacyComponent },
       { path: 'consultations-calendar', component: ConsultationsCalendarComponent },
-      {path: 'diagnostic', component: DiagnosticComponent}
+      {path: 'diagnostic', component: DiagnosticComponent},
+      // --- Dialysis Routes ---
+      {
+        path: 'dialysis/treatments',
+        component: TreatmentListComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['doctor', 'nurse', 'admin'] }
+      },
+      {
+        path: 'dialysis/sessions/:id',
+        component: SessionListComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['doctor', 'nurse', 'admin'] }
+      },
 
-    ],
-  },
+      // --- Dialysis Admin Routes ---
+      {
+        path: 'dialysis/admin/settings',
+        component: SystemConfigComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] }
+      },
+      {
+        path: 'dialysis/admin/audit',
+        component: AdminAuditComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] }
+      },
+      {
+        path: 'dialysis/my-schedule',
+        component: MyScheduleComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['nurse'] }
+
+      },
+    ] },
+
+
   // Public/Error Pages
   {
     path: '**',

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+// bar-chart-one.component.ts
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -14,32 +15,27 @@ import {
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
-
-
 @Component({
   selector: 'app-bar-chart-one',
-  imports: [
-    NgApexchartsModule
-],
+  standalone: true,
+  imports: [NgApexchartsModule],
   templateUrl: './bar-chart-one.component.html',
-  styles: ``
 })
-export class BarChartOneComponent {
+export class BarChartOneComponent implements OnChanges {
+  @Input() title = 'Bar Chart';
+  @Input() seriesName = 'Value';
+  @Input() categories: string[] = [];
+  @Input() values: Array<number | null | undefined> = [];
+  @Input() height = 220;
+  @Input() valueSuffix = ''; // "%" or "" etc.
 
-  public series: ApexAxisChartSeries = [
-    {
-      name: 'Sales',
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
-    },
-  ];
+  public series: ApexAxisChartSeries = [{ name: this.seriesName, data: [] }];
 
   public chart: ApexChart = {
     fontFamily: 'Outfit, sans-serif',
     type: 'bar',
-    height: 180,
-    toolbar: {
-      show: false,
-    },
+    height: this.height,
+    toolbar: { show: false },
   };
 
   public colors: string[] = ['#465fff'];
@@ -47,66 +43,46 @@ export class BarChartOneComponent {
   public plotOptions: ApexPlotOptions = {
     bar: {
       horizontal: false,
-      columnWidth: '39%',
-      borderRadius: 5,
+      columnWidth: '40%',
+      borderRadius: 6,
       borderRadiusApplication: 'end',
     },
   };
 
-  public dataLabels: ApexDataLabels = {
-    enabled: false,
-  };
+  public dataLabels: ApexDataLabels = { enabled: false };
 
-  public stroke: ApexStroke = {
-    show: true,
-    width: 4,
-    colors: ['transparent'],
-  };
+  public stroke: ApexStroke = { show: true, width: 3, colors: ['transparent'] };
 
   public xaxis: ApexXAxis = {
-    categories: [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ],
-    axisBorder: {
-      show: false,
-    },
-    axisTicks: {
-      show: false,
-    },
+    categories: [],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
   };
 
-  public yaxis: ApexYAxis = {
-    title: {
-      text: undefined,
-    },
-  };
+  public yaxis: ApexYAxis = { title: { text: undefined } };
 
-  public legend: ApexLegend = {
-    show: true,
-    position: 'top',
-    horizontalAlign: 'left',
-    fontFamily: 'Outfit',
-  };
+  public legend: ApexLegend = { show: false };
 
-  public grid: ApexGrid = {
-    yaxis: {
-      lines: {
-        show: true,
-      },
-    },
-  };
+  public grid: ApexGrid = { yaxis: { lines: { show: true } } };
 
-  public fill: ApexFill = {
-    opacity: 1,
-  };
+  public fill: ApexFill = { opacity: 1 };
 
   public tooltip: ApexTooltip = {
-    x: {
-      show: false,
-    },
+    x: { show: true },
     y: {
-      formatter: (val: number) => `${val}`,
+      formatter: (val: number) => `${val}${this.valueSuffix}`,
     },
   };
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // update chart height
+    this.chart = { ...this.chart, height: this.height };
+
+    // update x labels
+    this.xaxis = { ...this.xaxis, categories: this.categories ?? [] };
+
+    // update series
+    const data = (this.values ?? []).map(v => (typeof v === 'number' ? v : null));
+    this.series = [{ name: this.seriesName, data }];
+  }
 }

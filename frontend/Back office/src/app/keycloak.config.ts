@@ -3,5 +3,4 @@ const keycloakConfig = {
   realm: 'nephro-realm',
   clientId: 'nephro-client'
 };
-
 export default keycloakConfig;

@@ -34,8 +34,15 @@ export class AppSidebarComponent {
         { name: 'pharmacy', path: '/pharmacy' },
         { name: 'Consultations Calendar', path: '/consultations-calendar' },
         { name: 'Diagnostic', path: '/diagnostic' },
-        
-      ]
+
+        // Dialysis
+        // Dialysis
+        { name: "Dialysis Management", path: "/dialysis/treatments" },
+        { name: "Dialysis Settings", path: "/dialysis/admin/settings" },
+        { name: "Dialysis Audit Logs", path: "/dialysis/admin/audit" },
+        { name: "My Dialysis Schedule", path: "/dialysis/my-schedule" },
+         // nurse/admin
+      ],
     },
     {
       name: 'Calendar',
