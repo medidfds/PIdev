@@ -1,0 +1,424 @@
+<div class="arch-page">
+  <div class="blueprint-grid"></div>
+  <div class="radial-glow"></div>
+
+  <div class="arch-container">
+
+    <!-- ══ HEADER ══ -->
+    <div class="arch-header">
+      <div class="header-left">
+        <div class="header-icon">🏗</div>
+        <div>
+          <p class="header-eyebrow">Hospital Management System</p>
+          <h1 class="header-title">Building Architecture</h1>
+          <p class="header-sub">Live bed occupancy · 7-day discharge forecast · Click any room for details</p>
+        </div>
+      </div>
+
+      <!-- Stats pills -->
+      <div class="stats-strip">
+        <div class="stat-pill" style="--accent:#38bdf8">
+          <div class="stat-value" style="color:#38bdf8">{{ totalBeds }}</div>
+          <div class="stat-label">Total Beds</div>
+        </div>
+        <div class="stat-pill" style="--accent:#f87171">
+          <div class="stat-value" style="color:#f87171">{{ occupiedBeds }}</div>
+          <div class="stat-label">Occupied</div>
+        </div>
+        <div class="stat-pill" style="--accent:#34d399">
+          <div class="stat-value" style="color:#34d399">{{ freeBeds }}</div>
+          <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-pill" style="--accent:#fbbf24">
+          <div class="stat-value" style="color:#fbbf24">{{ occupancyPct }}%</div>
+          <div class="stat-label">Occupancy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LOADING ══ -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <span>Loading hospital data…</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- ══ CONTROLS ══ -->
+      <div class="controls-row">
+        <!-- View toggle -->
+        <div class="view-toggle">
+          <button [class.active]="view==='floor'"    (click)="setView('floor')">🏢 Floor Plan</button>
+          <button [class.active]="view==='forecast'" (click)="setView('forecast')">📅 7-Day Forecast</button>
+        </div>
+
+        <!-- Wing filter -->
+        <div class="wing-filter">
+          <button *ngFor="let w of ['ALL','A','B','C']"
+                  [class.active]="activeWing===w"
+                  (click)="activeWing=w">
+            {{ w === 'ALL' ? 'All Wings' : 'Wing ' + w }}
+          </button>
+        </div>
+
+        <!-- Type legend -->
+        <div class="type-legend">
+          <span *ngFor="let k of typeKeys" class="legend-item">
+            <span class="legend-dot" [style.background]="typeCfg[k].color"></span>
+            {{ typeCfg[k].label }}
+          </span>
+        </div>
+      </div>
+
+      <!-- ════════════════════ FLOOR PLAN ════════════════════ -->
+      <div *ngIf="view==='floor'" class="floor-layout" [class.has-panel]="selectedRoom">
+
+        <!-- Floor map -->
+        <div class="floor-map">
+
+          <!-- Blueprint SVG overlay -->
+          <svg class="blueprint-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <pattern id="smallGrid" width="5" height="5" patternUnits="userSpaceOnUse">
+                <path d="M5,0 L0,0 0,5" fill="none" stroke="rgba(56,189,248,0.06)" stroke-width="0.3"/>
+              </pattern>
+            </defs>
+            <rect width="100" height="100" fill="url(#smallGrid)"/>
+          </svg>
+
+          <!-- Wing sections -->
+          <div *ngFor="let w of wings" class="wing-section">
+            <ng-container *ngIf="roomsByWing[w].length > 0 || activeWing==='ALL' || activeWing===w">
+              <div *ngIf="roomsByWing[w].length > 0">
+
+                <!-- Wing header -->
+                <div class="wing-header">
+                  <div class="wing-badge">{{ w }}</div>
+                  <span class="wing-label">Wing {{ w }}</span>
+                  <div class="wing-line"></div>
+                  <!-- Corridor label -->
+                  <div class="corridor-label">
+                    <span>— CORRIDOR —</span>
+                  </div>
+                </div>
+
+                <!-- Room grid -->
+                <div class="room-grid">
+                  <div *ngFor="let room of roomsByWing[w]; trackBy: trackById"
+                       class="room-card"
+                       [class.selected]="selectedRoom?.id === room.id"
+                       [style.--room-color]="room.cfg.color"
+                       [style.--room-glow]="room.cfg.glow"
+                       [style.--room-bg]="room.cfg.bg"
+                       [style.--room-border]="room.cfg.border"
+                       (click)="selectRoom(room)">
+
+                    <!-- Top accent line -->
+                    <div class="room-accent-line" [style.background]="room.cfg.color"></div>
+
+                    <!-- Occupancy fill -->
+                    <div class="room-occ-fill" [style.height]="room.occupancyPct + '%'"
+                         [style.background]="room.cfg.color + '08'"></div>
+
+                    <!-- Content -->
+                    <div class="room-content">
+                      <!-- Header row -->
+                      <div class="room-header">
+                        <div>
+                          <div class="room-number">{{ room.roomNumber }}</div>
+                          <div class="room-type-badge" [style.color]="room.cfg.color"
+                               [style.background]="room.cfg.color + '22'"
+                               [style.border]="'1px solid ' + room.cfg.color + '44'">
+                            {{ room.cfg.short }}
+                          </div>
+                        </div>
+                        <div class="room-free-count" [style.color]="freeBedColor(room.freeBeds, room.capacity)"
+                             [style.background]="freeBedColor(room.freeBeds, room.capacity) + '15'"
+                             [style.border]="'1px solid ' + freeBedColor(room.freeBeds, room.capacity) + '33'">
+                          {{ room.freeBeds }}/{{ room.capacity }}
+                        </div>
+                      </div>
+
+                      <!-- Beds -->
+                      <div class="beds-row">
+                        <div *ngFor="let bed of room.beds; trackBy: trackByIndex"
+                             class="bed-slot"
+                             [class.occupied]="bed.occupied"
+                             [class.pending]="bed.pending"
+                             [style.--bcolor]="bed.occupied ? (bed.pending ? '#fbbf24' : room.cfg.color) : 'rgba(255,255,255,0.12)'"
+                             [style.--bbg]="bed.occupied ? (bed.pending ? 'rgba(245,158,11,0.12)' : room.cfg.color + '18') : 'rgba(16,185,129,0.06)'">
+
+                          <!-- Bed SVG icon -->
+                          <svg class="bed-icon" viewBox="0 0 36 24" width="34" height="22">
+                            <rect x="1" y="10" width="34" height="12" rx="2"
+                              [attr.fill]="bed.occupied ? room.cfg.color+'44' : 'rgba(255,255,255,0.05)'"
+                              [attr.stroke]="bed.occupied ? (bed.pending ? '#fbbf24' : room.cfg.color) : 'rgba(255,255,255,0.15)'"
+                              stroke-width="1.2"/>
+                            <rect x="1" y="5" width="7" height="17" rx="2"
+                              [attr.fill]="bed.occupied ? room.cfg.color+'55' : 'rgba(255,255,255,0.07)'"
+                              [attr.stroke]="bed.occupied ? (bed.pending ? '#fbbf24' : room.cfg.color) : 'rgba(255,255,255,0.12)'"
+                              stroke-width="1.2"/>
+                            <rect *ngIf="bed.occupied" x="2" y="6" width="5" height="4" rx="1"
+                              [attr.fill]="bed.pending ? '#fbbf2488' : room.cfg.color+'88'"/>
+                            <rect x="3" y="21" width="3" height="3" rx="1"
+                              [attr.fill]="bed.occupied ? room.cfg.color+'66' : 'rgba(255,255,255,0.1)'"/>
+                            <rect x="30" y="21" width="3" height="3" rx="1"
+                              [attr.fill]="bed.occupied ? room.cfg.color+'66' : 'rgba(255,255,255,0.1)'"/>
+                            <ng-container *ngIf="bed.occupied">
+                              <ellipse cx="19" cy="13" rx="7" ry="4" [attr.fill]="room.cfg.color+'55'"/>
+                              <circle cx="25" cy="12" r="2.5"
+                                [attr.fill]="bed.pending ? '#fbbf24' : room.cfg.color"/>
+                            </ng-container>
+                          </svg>
+
+                          <div class="bed-status" [style.color]="bed.occupied ? (bed.pending ? '#fbbf24' : room.cfg.color) : 'rgba(255,255,255,0.2)'">
+                            {{ bed.occupied ? (bed.pending ? 'PEND' : 'OCC') : 'FREE' }}
+                          </div>
+                          <div *ngIf="bed.occupied && bed.daysLeft !== undefined"
+                               class="bed-days" [class.urgent]="bed.daysLeft <= 1">
+                            {{ bed.daysLeft === 0 ? '→today' : bed.daysLeft + 'd' }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Occupancy bar -->
+                      <div class="occ-bar-track">
+                        <div class="occ-bar-fill"
+                             [style.width]="room.occupancyPct + '%'"
+                             [style.background]="occupancyColor(room.occupancyPct)"></div>
+                      </div>
+
+                      <!-- Footer -->
+                      <div class="room-footer">
+                        <span>{{ room.capacity - room.freeBeds }}/{{ room.capacity }} occupied</span>
+                        <span [style.color]="room.freeBeds > 0 ? '#34d399' : '#ef4444'">
+                          {{ room.freeBeds }} free
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- /room grid -->
+
+              </div>
+            </ng-container>
+          </div>
+          <!-- /wing sections -->
+        </div>
+        <!-- /floor map -->
+
+        <!-- ── DETAIL PANEL ── -->
+        <div *ngIf="selectedRoom" class="detail-panel"
+             [style.border-color]="selectedRoom.cfg.color + '55'"
+             [style.box-shadow]="'0 0 40px ' + selectedRoom.cfg.glow">
+
+          <!-- Panel header -->
+          <div class="panel-header"
+               [style.background]="'linear-gradient(135deg,' + selectedRoom.cfg.color + '18,transparent)'"
+               [style.border-bottom-color]="selectedRoom.cfg.color + '22'">
+            <div>
+              <div class="panel-room-num">Room {{ selectedRoom.roomNumber }}</div>
+              <div class="panel-room-type" [style.color]="selectedRoom.cfg.color">
+                {{ selectedRoom.cfg.label }} · Wing {{ selectedRoom.wing }}
+              </div>
+              <div class="panel-room-desc">{{ selectedRoom.description }}</div>
+            </div>
+            <button class="panel-close" (click)="selectedRoom=null">✕</button>
+          </div>
+
+          <div class="panel-body">
+
+            <!-- Bed list -->
+            <div class="panel-section-label">Bed Status</div>
+            <div class="bed-list">
+              <div *ngFor="let bed of selectedRoom.beds; trackBy: trackByIndex"
+                   class="bed-row"
+                   [style.border-left-color]="bed.occupied ? (bed.pending ? '#fbbf24' : selectedRoom.cfg.color) : 'rgba(255,255,255,0.1)'"
+                   [style.background]="bed.occupied ? selectedRoom.cfg.bg : 'rgba(255,255,255,0.02)'"
+                   [style.border-color]="bed.occupied ? selectedRoom.cfg.border : 'rgba(255,255,255,0.06)'">
+                <div class="bed-row-icon">🛏️</div>
+                <div class="bed-row-info">
+                  <div class="bed-row-title">Bed {{ bed.bedIndex + 1 }}</div>
+                  <div *ngIf="bed.occupied" class="bed-row-patient">Patient #{{ bed.patientId }}</div>
+                  <div *ngIf="!bed.occupied" class="bed-row-empty">— available —</div>
+                  <div *ngIf="bed.occupied && bed.daysLeft !== undefined"
+                       class="bed-row-discharge" [class.urgent]="bed.daysLeft! <= 1">
+                    📅 {{ bed.daysLeft === 0 ? 'Discharge today' : 'Discharge in ' + bed.daysLeft + ' days' }}
+                  </div>
+                </div>
+                <span class="bed-status-badge"
+                      [class.badge-occ]="bed.occupied && !bed.pending"
+                      [class.badge-pend]="bed.pending"
+                      [class.badge-free]="!bed.occupied"
+                      [style.color]="bed.occupied ? (bed.pending ? '#fbbf24' : selectedRoom.cfg.color) : '#34d399'"
+                      [style.background]="bed.occupied ? (bed.pending ? 'rgba(251,191,36,0.15)' : selectedRoom.cfg.bg) : 'rgba(52,211,153,0.1)'"
+                      [style.border-color]="bed.occupied ? (bed.pending ? '#fbbf2444' : selectedRoom.cfg.border) : 'rgba(52,211,153,0.25)'">
+                  {{ bed.occupied ? bed.status?.toUpperCase() : 'FREE' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Mini 7-day forecast -->
+            <div class="panel-section-label" style="margin-top:18px">7-Day Availability</div>
+            <div class="mini-forecast">
+              <div *ngFor="let day of days" class="mini-day">
+                <div class="mini-day-label">{{ day.short.split(' ')[0] }}</div>
+                <div class="mini-bar-wrap">
+                  <div class="mini-bar"
+                       [style.height]="(1 - getProjectedFree(selectedRoom.id, selectedRoom.capacity, day.offset)/selectedRoom.capacity) * 44 + 'px'"
+                       [style.background]="freeBedColor(getProjectedFree(selectedRoom.id, selectedRoom.capacity, day.offset), selectedRoom.capacity)">
+                  </div>
+                </div>
+                <div class="mini-free"
+                     [style.color]="freeBedColor(getProjectedFree(selectedRoom.id, selectedRoom.capacity, day.offset), selectedRoom.capacity)">
+                  {{ getProjectedFree(selectedRoom.id, selectedRoom.capacity, day.offset) }}
+                </div>
+                <div class="mini-unit">free</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <!-- /detail panel -->
+
+      </div>
+      <!-- /floor plan -->
+
+      <!-- ════════════════════ 7-DAY FORECAST ════════════════════ -->
+      <div *ngIf="view==='forecast'" class="forecast-view">
+
+        <p class="forecast-hint">
+          Numbers = <strong>free beds</strong> projected per day based on expected discharge dates.
+          <span class="hint-dot" style="color:#34d399">■ Available</span>
+          <span class="hint-dot" style="color:#fbbf24">■ Partially full</span>
+          <span class="hint-dot" style="color:#ef4444">■ Full</span>
+          <span class="hint-dot" style="color:#34d399">● Green dot = discharge that day</span>
+        </p>
+
+        <!-- Forecast grid -->
+        <div class="forecast-grid">
+
+          <!-- Column headers -->
+          <div class="forecast-row forecast-header-row">
+            <div class="forecast-room-label header-cell">Room</div>
+            <div *ngFor="let day of days"
+                 class="forecast-day-cell header-cell"
+                 [class.today-col]="day.offset===0"
+                 [class.hovered-col]="hoveredDay===day.offset"
+                 (mouseenter)="hoveredDay=day.offset"
+                 (mouseleave)="hoveredDay=null">
+              <div class="day-name" [class.today-name]="day.offset===0">{{ day.short.split(' ')[0] }}</div>
+              <div class="day-date">{{ day.short.split(' ').slice(1).join(' ') }}</div>
+            </div>
+          </div>
+
+          <!-- Wing groups + Room rows -->
+          <ng-container *ngFor="let w of wings">
+            <ng-container *ngIf="roomsByWing[w].length > 0">
+
+              <!-- Wing separator -->
+              <div class="forecast-wing-sep">
+                <div class="wing-sep-badge">{{ w }}</div>
+                <span class="wing-sep-label">Wing {{ w }}</span>
+              </div>
+
+              <!-- Room rows -->
+              <div *ngFor="let room of roomsByWing[w]; trackBy: trackById"
+                   class="forecast-row">
+
+                <!-- Room label -->
+                <div class="forecast-room-label room-label-cell"
+                     [style.border-left-color]="room.cfg.color"
+                     (click)="goToFloor(room)">
+                  <div class="forecast-room-num">{{ room.roomNumber }}</div>
+                  <div class="forecast-room-type" [style.color]="room.cfg.color">
+                    {{ room.cfg.label }} · {{ room.capacity }} beds
+                  </div>
+                  <div class="forecast-room-desc">{{ room.description }}</div>
+                </div>
+
+                <!-- Day cells -->
+                <div *ngFor="let day of days"
+                     class="forecast-day-cell data-cell"
+                     [class.hovered-col]="hoveredDay===day.offset"
+                     [class.today-col]="day.offset===0"
+                     [style.background]="forecastCellBg(getProjectedFree(room.id, room.capacity, day.offset), room.capacity, hoveredDay===day.offset)"
+                     [style.border]="forecastCellBorder(getProjectedFree(room.id, room.capacity, day.offset), room.capacity, hoveredDay===day.offset)"
+                     (mouseenter)="hoveredDay=day.offset"
+                     (mouseleave)="hoveredDay=null">
+
+                  <!-- Fill indicator -->
+                  <div class="cell-fill"
+                       [style.height]="(1 - getProjectedFree(room.id, room.capacity, day.offset)/room.capacity)*100 + '%'"
+                       [style.background]="freeBedColor(getProjectedFree(room.id, room.capacity, day.offset), room.capacity) + '18'">
+                  </div>
+
+                  <!-- Discharge dot -->
+                  <div *ngIf="getDischargingCount(room.id, day.iso) > 0" class="discharge-dot"></div>
+
+                  <!-- Numbers -->
+                  <div class="cell-content">
+                    <div class="cell-free"
+                         [style.color]="freeBedColor(getProjectedFree(room.id, room.capacity, day.offset), room.capacity)">
+                      {{ getProjectedFree(room.id, room.capacity, day.offset) }}
+                    </div>
+                    <div class="cell-total">/{{ room.capacity }}</div>
+                    <div *ngIf="getProjectedFree(room.id, room.capacity, day.offset) === 0"
+                         class="cell-full-label">FULL</div>
+                    <div *ngIf="getDischargingCount(room.id, day.iso) > 0"
+                         class="cell-discharge-label">
+                      +{{ getDischargingCount(room.id, day.iso) }} out
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /room row -->
+
+            </ng-container>
+          </ng-container>
+
+          <!-- Hospital totals row -->
+          <div class="forecast-row totals-row">
+            <div class="forecast-room-label totals-label">
+              <div class="totals-title">HOSPITAL TOTAL</div>
+              <div class="totals-sub">{{ totalBeds }} beds total</div>
+            </div>
+            <div *ngFor="let day of days"
+                 class="forecast-day-cell totals-cell"
+                 [class.hovered-col]="hoveredDay===day.offset"
+                 [style.background]="forecastCellBg(getHospitalTotalFree(day.offset), totalBeds, hoveredDay===day.offset)"
+                 [style.border]="forecastCellBorder(getHospitalTotalFree(day.offset), totalBeds, hoveredDay===day.offset)"
+                 (mouseenter)="hoveredDay=day.offset"
+                 (mouseleave)="hoveredDay=null">
+              <div class="cell-content">
+                <div class="cell-free"
+                     [style.color]="freeBedColor(getHospitalTotalFree(day.offset), totalBeds)">
+                  {{ getHospitalTotalFree(day.offset) }}
+                </div>
+                <div class="cell-total">/{{ totalBeds }}</div>
+                <div class="cell-pct"
+                     [style.color]="freeBedColor(getHospitalTotalFree(day.offset), totalBeds)">
+                  {{ totalBeds ? (getHospitalTotalFree(day.offset)/totalBeds*100 | number:'1.0-0') : 0 }}%
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /forecast grid -->
+
+        <div class="forecast-note">
+          <span>Click any room name to view in the floor plan</span>
+          <span>·</span>
+          <span>Hover a column to highlight across all rooms</span>
+          <span>·</span>
+          <span>Based on expected discharge dates stored in hospitalization records</span>
+        </div>
+      </div>
+      <!-- /forecast view -->
+
+    </div>
+    <!-- /!loading -->
+
+  </div>
+</div>
