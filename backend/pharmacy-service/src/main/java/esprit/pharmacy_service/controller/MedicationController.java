@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/medications")
+@RequestMapping("/api/medications")
 @RequiredArgsConstructor
 public class MedicationController {
     private final IMedicationService service;
@@ -39,5 +39,9 @@ public class MedicationController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         service.delete(id);
+    }
+    @GetMapping("/user/{userId}")
+    public List<Medication> getByUser(@PathVariable String userId) {
+        return service.findByUserId(userId);
     }
 }

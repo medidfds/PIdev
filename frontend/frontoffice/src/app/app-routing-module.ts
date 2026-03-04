@@ -12,7 +12,12 @@ import {HospitalizationComponent} from './hospitalization/hospitalization.compon
 import { NotificationsComponent } from './Notifications/Notifications.component';
 import { ProfileComponent } from './Profile/Profile.component';
 import { ClinicalComponent } from './clinical/clinical.component';
+<<<<<<< HEAD
 >>>>>>> f196738805fbbfd9801e4df05a28d4909d4ae2dd
+=======
+import { PharmacyComponent } from './pharmacy/pharmacy.component';
+import { BadgeViewerComponent } from './pages/badge-viewer/badge-viewer.component';
+>>>>>>> 7ecf3261aaebf7546535d59d93d63362eb813bf2
 
 
 const routes: Routes = [
@@ -41,11 +46,20 @@ const routes: Routes = [
     path: 'hospitalization',
     component: HospitalizationComponent
   },
+  {
+    path: 'pharmacy',
+    component: PharmacyComponent
+  },
   { path: 'notifications', 
     component: NotificationsComponent 
   },
   { path: 'profile', 
     component: ProfileComponent 
+  },
+  {
+    path: 'badge-viewer',
+    component: BadgeViewerComponent,
+    // PAS de canActivate ici !
   },
   
   {

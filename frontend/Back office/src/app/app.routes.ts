@@ -17,13 +17,25 @@ import { ImagesComponent } from './pages/ui-elements/images/images.component';
 import { VideosComponent } from './pages/ui-elements/videos/videos.component';
 import { CalenderComponent } from './pages/calender/calender.component';
 import { ClinicalComponent } from './pages/clinical/clinical.component';
+import { TreatmentListComponent } from './pages/dialysis/treatment-list/treatment-list.component';
+import { SessionListComponent } from './pages/dialysis/session-list/session-list.component';
 import { ConsultationsCalendarComponent } from './pages/consultations-calendar/consultations-calendar.component';
+import { HospitalArchitectureComponent } from './pages/dashboard/hospital-architecture/hospital-architecture.component';
+import { StatistiquePharmacyComponent } from './pages/stock/statistique-pharmacy/statistique-pharmacy.component';
 
 
 import { RoleGuard } from './guards/role.guard';
 import {HospitalizationComponent} from "./pages/dashboard/hospitalization/hospitalization.component";
 import { StatistiqueHospitalizationComponent } from './pages/statistique/statistique-hospitalization.component';
+<<<<<<< HEAD
 import { DiagnosticComponent } from './pages/dashboard/diagnostic/diagnostic.component';
+=======
+import { PharmacyComponent } from './pages/pharmacy/pharmacy.component';
+import { DiagnosticComponent } from './pages/dashboard/diagnostic/diagnostic.component';
+import {SystemConfigComponent} from "./pages/dialysis/admin/system-config/system-config.component";
+import {AdminAuditComponent} from "./pages/dialysis/admin/audit/admin-audit.component";
+import {MyScheduleComponent} from "./pages/dialysis/my-schedule/my-schedule.component";
+>>>>>>> 7ecf3261aaebf7546535d59d93d63362eb813bf2
 export const routes: Routes = [
   {
     path: '',
@@ -56,12 +68,49 @@ export const routes: Routes = [
       { path: 'hospitalization', component: HospitalizationComponent },
       { path: 'diagnostic', component: DiagnosticComponent },
       { path: 'statistique-hospitalization', component: StatistiqueHospitalizationComponent },
+      { path: 'architecture', component: HospitalArchitectureComponent }, // Placeholder for architecture overview
       { path: 'clinical', component: ClinicalComponent },
+      { path: 'pharmacy', component: PharmacyComponent },
+       { path: 'statistique-pharmacy', component: StatistiquePharmacyComponent },
       { path: 'consultations-calendar', component: ConsultationsCalendarComponent },
+      {path: 'diagnostic', component: DiagnosticComponent},
+      // --- Dialysis Routes ---
+      {
+        path: 'dialysis/treatments',
+        component: TreatmentListComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['doctor', 'nurse', 'admin'] }
+      },
+      {
+        path: 'dialysis/sessions/:id',
+        component: SessionListComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['doctor', 'nurse', 'admin'] }
+      },
+
+      // --- Dialysis Admin Routes ---
+      {
+        path: 'dialysis/admin/settings',
+        component: SystemConfigComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] }
+      },
+      {
+        path: 'dialysis/admin/audit',
+        component: AdminAuditComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] }
+      },
+      {
+        path: 'dialysis/my-schedule',
+        component: MyScheduleComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['nurse'] }
+
+      },
+    ] },
 
 
-    ],
-  },
   // Public/Error Pages
   {
     path: '**',

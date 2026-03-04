@@ -13,6 +13,7 @@
         <option value="$PROJECT_DIR$/Hospitalization-service/pom.xml" />
         <option value="$PROJECT_DIR$/Api-Gateway/pom.xml" />
         <option value="$PROJECT_DIR$/diagnostic-service/pom.xml" />
+        <option value="$PROJECT_DIR$/config/pom.xml" />
       </list>
     </option>
   </component>
