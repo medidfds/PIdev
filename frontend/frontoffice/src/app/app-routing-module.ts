@@ -15,20 +15,15 @@ import { BadgeViewerComponent } from './pages/badge-viewer/badge-viewer.componen
 const routes: Routes = [
   {
     path: '',
-    component: HomeComponent,
-    canActivate: [AuthGuard]
+    component: HomeComponent
   },
   {
     path: 'diagnostic',
-    component: DiagnosticComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['labTech'] }
+    component: DiagnosticComponent
   },
   {
-    path: 'diagnostic-calendar',          // ← AJOUTÉ
-    component: DiagnosticCalendarComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['labTech'] }
+    path: 'diagnostic-calendar',          
+    component: DiagnosticCalendarComponent
   },
   {
     path: 'clinical',
