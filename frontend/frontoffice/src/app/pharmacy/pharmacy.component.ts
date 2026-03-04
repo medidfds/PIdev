@@ -4,6 +4,7 @@ import { PrescriptionService, Prescription } from '../services/prescription.serv
 import { BadgeUrlService } from '../services/badge-url.service';
 import { KeycloakService } from 'keycloak-angular';
 
+
 // ── Interfaces ─────────────────────────────────────────────────────────────────
 export interface BadgeData {
   condition:      string;

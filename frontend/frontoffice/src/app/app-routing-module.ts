@@ -2,22 +2,14 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { AuthGuard } from './guards/auth-guard';
-<<<<<<< HEAD
+import { DiagnosticCalendarComponent } from './diagnostic-calendar/diagnostic-calendar.component'; // ← AJOUTÉ
 import { DiagnosticComponent } from './diagnostic/diagnostic.component';
 import { HospitalizationComponent } from './hospitalization/hospitalization.component';
-import { DiagnosticCalendarComponent } from './diagnostic-calendar/diagnostic-calendar.component'; // ← AJOUTÉ
-=======
-import {DiagnosticComponent} from './diagnostic/diagnostic.component';
-import {HospitalizationComponent} from './hospitalization/hospitalization.component';
 import { NotificationsComponent } from './Notifications/Notifications.component';
 import { ProfileComponent } from './Profile/Profile.component';
 import { ClinicalComponent } from './clinical/clinical.component';
-<<<<<<< HEAD
->>>>>>> f196738805fbbfd9801e4df05a28d4909d4ae2dd
-=======
 import { PharmacyComponent } from './pharmacy/pharmacy.component';
 import { BadgeViewerComponent } from './pages/badge-viewer/badge-viewer.component';
->>>>>>> 7ecf3261aaebf7546535d59d93d63362eb813bf2
 
 
 const routes: Routes = [

@@ -15,20 +15,12 @@ import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
 import keycloakConfig from './keycloak.config';
 import { DiagnosticComponent } from './diagnostic/diagnostic.component';
 import { HospitalizationComponent } from './hospitalization/hospitalization.component';
-<<<<<<< HEAD
-import { DiagnosticCalendarComponent } from './diagnostic-calendar/diagnostic-calendar.component'; // ← AJOUTÉ
-=======
+import { DiagnosticCalendarComponent } from './diagnostic-calendar/diagnostic-calendar.component'; 
 import { ClinicalComponent } from './clinical/clinical.component';
 
 import { NotificationsComponent } from './Notifications/Notifications.component';
 import { ProfileComponent } from './Profile/Profile.component';
-<<<<<<< HEAD
->>>>>>> f196738805fbbfd9801e4df05a28d4909d4ae2dd
-
-=======
 import { PharmacyComponent } from './pharmacy/pharmacy.component';
-import {DiagnosticCalendarComponent} from './diagnostic-calendar/diagnostic-calendar.component'
->>>>>>> 7ecf3261aaebf7546535d59d93d63362eb813bf2
 
 function initializeKeycloak(keycloak: KeycloakService) {
   return () =>
@@ -50,18 +42,12 @@ function initializeKeycloak(keycloak: KeycloakService) {
     HomeComponent,
     DiagnosticComponent,
     HospitalizationComponent,
-<<<<<<< HEAD
-    DiagnosticCalendarComponent,   // ← AJOUTÉ
-=======
+    DiagnosticCalendarComponent,   
     NotificationsComponent,
     ProfileComponent,
     ClinicalComponent,
-<<<<<<< HEAD
->>>>>>> f196738805fbbfd9801e4df05a28d4909d4ae2dd
-=======
     PharmacyComponent,
     DiagnosticCalendarComponent
->>>>>>> 7ecf3261aaebf7546535d59d93d63362eb813bf2
   ],
   imports: [
     CommonModule,

@@ -27,15 +27,11 @@ import { StatistiquePharmacyComponent } from './pages/stock/statistique-pharmacy
 import { RoleGuard } from './guards/role.guard';
 import {HospitalizationComponent} from "./pages/dashboard/hospitalization/hospitalization.component";
 import { StatistiqueHospitalizationComponent } from './pages/statistique/statistique-hospitalization.component';
-<<<<<<< HEAD
-import { DiagnosticComponent } from './pages/dashboard/diagnostic/diagnostic.component';
-=======
 import { PharmacyComponent } from './pages/pharmacy/pharmacy.component';
 import { DiagnosticComponent } from './pages/dashboard/diagnostic/diagnostic.component';
 import {SystemConfigComponent} from "./pages/dialysis/admin/system-config/system-config.component";
 import {AdminAuditComponent} from "./pages/dialysis/admin/audit/admin-audit.component";
 import {MyScheduleComponent} from "./pages/dialysis/my-schedule/my-schedule.component";
->>>>>>> 7ecf3261aaebf7546535d59d93d63362eb813bf2
 export const routes: Routes = [
   {
     path: '',
