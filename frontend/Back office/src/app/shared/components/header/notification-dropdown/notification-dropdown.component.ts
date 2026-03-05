@@ -5,6 +5,20 @@ import { Subscription, interval, startWith, switchMap, forkJoin, of, finalize } 
 
 import { DropdownComponent } from '../../ui/dropdown/dropdown.component';
 import { DropdownItemComponent } from '../../ui/dropdown/dropdown-item/dropdown-item.component';
+import { NotificationService, Toast } from '../../../../services/notification.service';
+
+export interface DiagnosticNotification {
+  id: string;
+  type: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  title: string;
+  message: string;
+  targetUserId: string;
+  relatedOrderId?: string;
+  isRead: boolean;
+  isAcknowledged: boolean;
+  createdAt: string;
+}
 
 import { NotificationApiService, NotificationDto } from '../../../services/notification-api.service';
 import { DialysisService } from '../../../services/dialysis.service';
@@ -69,7 +83,18 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     }
   }
 
-  closeDropdown() {
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
+
+  toggleDropdown(): void {
+    this.isOpen = !this.isOpen;
+    if (this.isOpen && this.unreadCount > 0) {
+      this.markAllRead();
+    }
+  }
+
+  closeDropdown(): void {
     this.isOpen = false;
   }
 
